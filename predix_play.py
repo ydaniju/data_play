@@ -2,8 +2,8 @@ import pandas as pd
 import requests
 import json
 import base64
-from bokeh.charts import TimeSeries, output_file, show
-output_file("test.html")
+# from bokeh.charts import TimeSeries, output_file, show
+# output_file("test.html")
 
 sess = requests.Session()
 adapter = requests.adapters.HTTPAdapter(max_retries = 20)
@@ -12,8 +12,6 @@ sess.mount('https://', adapter)
 
 uaaUrl = "https://iiotquest-uaa-service.predix-uaa.run.aws-usw02-pr.ice.predix.io/oauth/token"
 tsUrl = "https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints"
-payload_last = "{\n  \"start\": \"1y-ago\",\n  \"tags\": [\n    {\n      \"name\": \"WT001_ACTIVE_POWER\",\n      \"order\": \"desc\",\n      \"limit\": 1\n    }\n  ]\n}"
-payload_first = "{\n  \"start\": \"1y-ago\",\n  \"tags\": [\n    {\n      \"name\": \"WT001_ACTIVE_POWER\",\n      \"order\": \"asc\",\n      \"limit\": 1\n    }\n  ]\n}"
 zoneId = "e897dc32-c491-4641-9c54-3f3bd75ca189"
 token = base64.b64encode('timeseries_client_readonly:IM_SO_SECRET')
 
@@ -38,18 +36,37 @@ def doQuery(payload, tsUrl, uaaUrl, token, zoneId):
     series['timestamp'] = pd.to_datetime(series['timestamp'], unit='ms')
     return series
 
-firstPoint = doQuery(payload_first, tsUrl, uaaUrl, token, zoneId)
-startDate =  pd.Timestamp(firstPoint['timestamp'][0])
-startDateOrigin = startDate = int(startDate.strftime("%s")) * 1000
+def last_payload(tag):
+  return "{\n  \"start\": \"1y-ago\",\n  \"tags\": [\n    {\n      \"name\": \"%s\",\n      \"order\": \"desc\",\n      \"limit\": 1\n    }\n  ]\n}" % tag
 
-lastPoint = doQuery(payload_last, tsUrl, uaaUrl, token, zoneId)
-endDate =  pd.Timestamp(lastPoint['timestamp'][0])
-endDate = int(endDate.strftime("%s")) * 1000
+def first_payload(tag):
+  return "{\n  \"start\": \"1y-ago\",\n  \"tags\": [\n    {\n      \"name\": \"%s\",\n      \"order\": \"asc\",\n      \"limit\": 1\n    }\n  ]\n}" % tag
+
+tags = [
+  'WT001_ACTIVE_POWER', 'WT002_ACTIVE_POWER', 'WT003_ACTIVE_POWER',
+  'WT004_ACTIVE_POWER', 'WT005_ACTIVE_POWER', 'WT006_ACTIVE_POWER',
+  'WT007_ACTIVE_POWER', 'WT008_ACTIVE_POWER', 'WT009_ACTIVE_POWER',
+  'WT010_ACTIVE_POWER'
+]
+
 pdArray = []
-while (startDate < endDate ):
+for tag in tags:
+
+  payload_first = first_payload(tag)
+  payload_last = last_payload(tag)
+  firstPoint = doQuery(payload_first, tsUrl, uaaUrl, token, zoneId)
+  print(tag, firstPoint)
+  startDate =  pd.Timestamp(firstPoint['timestamp'][0])
+  startDateOrigin = startDate = int(startDate.strftime("%s")) * 1000
+
+  lastPoint = doQuery(payload_last, tsUrl, uaaUrl, token, zoneId)
+  endDate =  pd.Timestamp(lastPoint['timestamp'][0])
+  endDate = int(endDate.strftime("%s")) * 1000
+
+  while (startDate < endDate ):
     payload = { 
       'cache_time': 0,
-      'tags': [{'name': 'WT001_ACTIVE_POWER', 'order': 'asc'}],
+      'tags': [{'name': tag, 'order': 'asc'}],
       'start': startDate, 'end': startDate + 10000000
     }
     
@@ -59,7 +76,4 @@ while (startDate < endDate ):
 
 fullseries = pd.concat(pdArray)
 
-
-data = dict(values = fullseries['values'], Date=fullseries['timestamp'])
-p = TimeSeries(data, x='Date', y='values')
-show(p)
+fullseries.to_csv('power_series.csv', sep='\t', encoding='utf-8')
