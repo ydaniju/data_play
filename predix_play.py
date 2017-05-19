@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import json
 import base64
+from collections import defaultdict
 # from bokeh.charts import TimeSeries, output_file, show
 # output_file("test.html")
 
@@ -59,6 +60,7 @@ tags = [
 ]
 
 pdArray = []
+store = defaultdict(list)
 for tag in tags:
 
   payload_first = first_payload(tag)
@@ -76,11 +78,10 @@ for tag in tags:
   series = doQuery(json.dumps(payload), tsUrl, uaaUrl, token, zoneId)
   times = series.get('timestamp')
   values = series.get('values')
-  for a in values:
-    print a
 
-  pdArray.append(series)
+  for i, a in enumerate(times):
+    store[a].append(values[i])
 
-fullseries = pd.concat(pdArray)
+fullseries = pd.concat(store)
 
 fullseries.to_csv('power_series.csv', sep='\t', encoding='utf-8')
