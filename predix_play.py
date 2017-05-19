@@ -33,7 +33,7 @@ def doQuery(payload, tsUrl, uaaUrl, token, zoneId):
     data = json.loads(response.text)['tags'][0]['results'][0]['values']
     column_labels = ['timestamp', 'values', 'quality']
     series = pd.DataFrame(data, columns=column_labels)
-    series['timestamp'] = pd.to_datetime(series['timestamp'], unit='ms')
+    # series['timestamp'] = pd.to_datetime(series['timestamp'], unit='ms')
     return series
 
 def last_payload(tag):
@@ -64,11 +64,8 @@ for tag in tags:
   payload_first = first_payload(tag)
   payload_last = last_payload(tag)
   firstPoint = doQuery(payload_first, tsUrl, uaaUrl, token, zoneId)
-  print(tag, firstPoint)
   startDate =  pd.Timestamp(firstPoint['timestamp'][0])
   startDateOrigin = startDate = int(startDate.strftime("%s")) * 1000
-
-  print(startDateOrigin)
 
   payload = { 
     'cache_time': 0,
@@ -77,6 +74,11 @@ for tag in tags:
   }
     
   series = doQuery(json.dumps(payload), tsUrl, uaaUrl, token, zoneId)
+  times = series.get('timestamp')
+  values = series.get('values')
+  for a in values:
+    print a
+
   pdArray.append(series)
 
 fullseries = pd.concat(pdArray)
