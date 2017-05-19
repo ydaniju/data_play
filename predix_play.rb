@@ -10,10 +10,9 @@ ts_url = 'https://time-series-store-predix.run.aws-usw02-pr.ice.predix.'\
 zone_id = 'e897dc32-c491-4641-9c54-3f3bd75ca189'
 token = Base64.encode64('timeseries_client_readonly:IM_SO_SECRET')
 
-def do_query(payload, ts_url, uaa_url, token, zone_id)
+def auth(uaa_url, token)
   headers = {
-    'authorization' => 'Basic ' + token,
-    'cache-control' => 'no-cache',
+    'authorization' => 'Basic ' + token, 'cache-control' => 'no-cache',
     'content-type' => 'application/x-www-form-urlencoded'
   }
   response = RestClient::Request.execute(
@@ -21,21 +20,21 @@ def do_query(payload, ts_url, uaa_url, token, zone_id)
     payload: 'grant_type=client_credentials',
     headers: headers
   )
+  JSON.parse(response)['access_token']
+end
 
-  token = JSON.parse(response)['access_token']
+def do_query(payload, ts_url, uaa_url, token, zone_id)
+  token = auth(uaa_url, token)
   headers = {
-    'authorization' => 'Bearer ' + token,
-    'predix-zone-id' => zone_id,
-    'content-type' => 'application/json',
-    'cache-control' => 'no-cache'
+    'authorization' => 'Bearer ' + token, 'predix-zone-id' => zone_id,
+    'content-type' => 'application/json', 'cache-control' => 'no-cache'
   }
   puts payload
-  response = RestClient::Request.execute(method: :post, url: ts_url,
-                                         payload: payload,
-                                         headers: headers)
+  response = RestClient::Request.execute(
+    method: :post, url: ts_url, payload: payload, headers: headers
+  )
 
-  data = JSON.parse(response)['tags'][0]['results'][0]['values']
-  data
+  JSON.parse(response)['tags'][0]['results'][0]['values']
 end
 
 def last_payload(tag)
