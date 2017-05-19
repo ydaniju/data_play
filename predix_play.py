@@ -72,16 +72,14 @@ for tag in tags:
   endDate =  pd.Timestamp(lastPoint['timestamp'][0])
   endDate = int(endDate.strftime("%s")) * 1000
 
-  while (startDate < endDate ):
-    payload = { 
-      'cache_time': 0,
-      'tags': [{'name': tag, 'order': 'asc'}],
-      'start': startDate, 'end': startDate + 10000000
-    }
+  payload = { 
+    'cache_time': 0,
+    'tags': [{'name': tag, 'order': 'asc'}],
+    'start': startDate
+  }
     
-    startDate = startDate + 100000000
-    series = doQuery(json.dumps(payload), tsUrl, uaaUrl, token, zoneId)
-    pdArray.append(series)
+  series = doQuery(json.dumps(payload), tsUrl, uaaUrl, token, zoneId)
+  pdArray.append(series)
 
 fullseries = pd.concat(pdArray)
 
