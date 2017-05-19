@@ -82,6 +82,11 @@ for tag in tags:
   for i, a in enumerate(times):
     store[a].append(values[i])
 
-fullseries = pd.concat(store)
+len(store)
+for key, value in store.iteritems(): 
+  value.append(key)
+  pdArray.append(pd.DataFrame(value, columns=(tags + ['timeseries'])))
+
+fullseries = pd.concat(pdArray)
 
 fullseries.to_csv('power_series.csv', sep='\t', encoding='utf-8')
