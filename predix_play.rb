@@ -3,20 +3,24 @@ require 'base64'
 require 'json'
 require 'csv'
 
-uaa_url = 'https://iiotquest-uaa-service.predix-uaa.run.aws-usw02-pr.ice.predix.io/oauth/token'
-ts_url = 'https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints'
+uaa_url = 'https://iiotquest-uaa-service.predix-uaa.run.aws-usw02-pr.'\
+  'ice.predix.io/oauth/token'
+ts_url = 'https://time-series-store-predix.run.aws-usw02-pr.ice.predix.'\
+  'io/v1/datapoints'
 zone_id = 'e897dc32-c491-4641-9c54-3f3bd75ca189'
 token = Base64.encode64('timeseries_client_readonly:IM_SO_SECRET')
 
-def doQuery(payload, ts_url, uaa_url, token, zone_id)
+def do_query(payload, ts_url, uaa_url, token, zone_id)
   headers = {
     'authorization' => 'Basic ' + token,
     'cache-control' => 'no-cache',
     'content-type' => 'application/x-www-form-urlencoded'
   }
-  response = RestClient::Request.execute(method: :post, url: uaa_url,
-                                         payload: 'grant_type=client_credentials',
-                                         headers: headers)
+  response = RestClient::Request.execute(
+    method: :post, url: uaa_url,
+    payload: 'grant_type=client_credentials',
+    headers: headers
+  )
 
   token = JSON.parse(response)['access_token']
   headers = {
@@ -89,7 +93,7 @@ wind_turbines = %w(
   hash = Hash.new([])
   tags.each do |tag|
     payload_first = first_payload(tag)
-    first_point = doQuery(payload_first, ts_url, uaa_url, token, zone_id)
+    first_point = do_query(payload_first, ts_url, uaa_url, token, zone_id)
     start_date = first_point[0][0]
     payload = {
       cache_time:  0,
@@ -97,7 +101,7 @@ wind_turbines = %w(
       start: start_date
     }
 
-    series = doQuery(JSON.generate(payload), ts_url, uaa_url, token, zone_id)
+    series = do_query(JSON.generate(payload), ts_url, uaa_url, token, zone_id)
     series.each_with_index do |e, _i|
       hash[e[0]] += [e[1]]
     end
@@ -111,7 +115,9 @@ wind_turbines = %w(
     a += 1
   end
 
-  CSV.open("#{wind_turbines[n]}.csv", 'wb', write_headers: true, headers: headers) do |csv|
+  CSV.open(
+    "#{wind_turbines[n]}.csv", 'wb', write_headers: true, headers: headers
+  ) do |csv|
     arr.each do |elem|
       csv << elem
     end
