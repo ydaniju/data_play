@@ -68,9 +68,7 @@ for tag in tags:
   startDate =  pd.Timestamp(firstPoint['timestamp'][0])
   startDateOrigin = startDate = int(startDate.strftime("%s")) * 1000
 
-  lastPoint = doQuery(payload_last, tsUrl, uaaUrl, token, zoneId)
-  endDate =  pd.Timestamp(lastPoint['timestamp'][0])
-  endDate = int(endDate.strftime("%s")) * 1000
+  print(startDateOrigin)
 
   payload = { 
     'cache_time': 0,
