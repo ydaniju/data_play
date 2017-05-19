@@ -43,10 +43,19 @@ def first_payload(tag):
   return "{\n  \"start\": \"1y-ago\",\n  \"tags\": [\n    {\n      \"name\": \"%s\",\n      \"order\": \"asc\",\n      \"limit\": 1\n    }\n  ]\n}" % tag
 
 tags = [
-  'WT001_ACTIVE_POWER', 'WT002_ACTIVE_POWER', 'WT003_ACTIVE_POWER',
-  'WT004_ACTIVE_POWER', 'WT005_ACTIVE_POWER', 'WT006_ACTIVE_POWER',
-  'WT007_ACTIVE_POWER', 'WT008_ACTIVE_POWER', 'WT009_ACTIVE_POWER',
-  'WT010_ACTIVE_POWER'
+  "WT001_ACTIVE_POWER",
+  "WT001_AMBIENT_TEMP",
+  "WT001_HYDRAULIC_OIL_TEMP",
+  "WT001_PHASE_CURRENT_A",
+  "WT001_PHASE_CURRENT_B",
+  "WT001_PHASE_CURRENT_C",
+  "WT001_PHASE_VOLTAGE_A",
+  "WT001_PHASE_VOLTAGE_B",
+  "WT001_PHASE_VOLTAGE_C",
+  "WT001_REACTIVE_POWER",
+  "WT001_TURBINE_STATUS",
+  "WT001_WIND_DIRECTION",
+  "WT001_WIND_SPEED"
 ]
 
 pdArray = []
